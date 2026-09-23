@@ -94,3 +94,20 @@ export function searchByTitle(keyword) {
   );
 }
 
+export function getBooksFromDb() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(books);
+    }, 500);
+  });
+}
+
+export function getBookOrThrow(id) {
+  const book = findBookById(id);
+
+  if (!book) {
+    throw new Error("Book not found");
+  }
+
+  return book;
+}

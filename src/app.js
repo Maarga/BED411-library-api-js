@@ -3,7 +3,9 @@ import express from "express";
 import {
   books,
   findBookById,
-  searchByTitle
+  searchByTitle,
+  getBooksFromDb,
+  getBookOrThrow
 } from "./books.js";
 
 const app = express();
@@ -32,7 +34,8 @@ app.get("/profile", (req, res) => {
   });
 });
 
-app.get("/books", (req, res) => {
+app.get("/books", async (req, res) => {
+  const books = await getBooksFromDb();
   const q = req.query.q;
 
   if (q) {
@@ -43,16 +46,16 @@ app.get("/books", (req, res) => {
 });
 
 app.get("/books/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const book = findBookById(id);
+  try {
+    const id = Number(req.params.id);
+    const book = getBookOrThrow(id);
 
-  if (!book) {
-    return res.status(404).json({
-      message: "Book not found"
+    res.json(book);
+  } catch (error) {
+    res.status(404).json({
+      message: error.message
     });
   }
-
-  res.json(book);
 });
 
 app.get("/about", (req, res) => {
