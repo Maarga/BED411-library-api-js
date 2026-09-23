@@ -1,5 +1,11 @@
 import express from "express";
 
+import {
+  books,
+  findBookById,
+  searchByTitle
+} from "./books.js";
+
 const app = express();
 
 const PORT = 3000;
@@ -26,13 +32,27 @@ app.get("/profile", (req, res) => {
   });
 });
 
+app.get("/books", (req, res) => {
+  const q = req.query.q;
+
+  if (q) {
+    return res.json(searchByTitle(q));
+  }
+
+  res.json(books);
+});
+
 app.get("/books/:id", (req, res) => {
   const id = Number(req.params.id);
+  const book = findBookById(id);
 
-  res.json({
-    id: id,
-    title: "Node.js Basics"
-  });
+  if (!book) {
+    return res.status(404).json({
+      message: "Book not found"
+    });
+  }
+
+  res.json(book);
 });
 
 app.get("/about", (req, res) => {
