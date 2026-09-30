@@ -8,7 +8,7 @@ import {
   getBookOrThrow,
   addBook,
   updateBook,
-  deleteBook
+  removeBook
 } from "./books.js";
 
 const app = express();
@@ -79,15 +79,15 @@ app.patch("/books/:id", (req, res) => {
 
 app.delete("/books/:id", (req, res) => {
   const id = Number(req.params.id);
-  const deleted = deleteBook(id);
+  const ok = removeBook(id);
 
-  if (!deleted) {
+  if (!ok) {
     return res.status(404).json({
       message: "Book not found"
     });
   }
 
-  res.json(deleted);
+  res.status(204).send();
 });
 
 app.get("/books/:id", (req, res) => {

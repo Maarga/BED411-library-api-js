@@ -135,12 +135,13 @@ export function updateBook(id, changes) {
   return book;
 }
 
-export function deleteBook(id) {
+export function removeBook(id) {
   const index = books.findIndex(
     (book) => book.id === id
   );
 
-  if (index === -1) return null;
+  if (index === -1) return false;
 
-  return books.splice(index, 1)[0];
+  books.splice(index, 1);
+  return true;
 }
