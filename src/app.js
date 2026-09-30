@@ -5,10 +5,15 @@ import {
   findBookById,
   searchByTitle,
   getBooksFromDb,
-  getBookOrThrow
+  getBookOrThrow,
+  addBook,
+  updateBook,
+  deleteBook
 } from "./books.js";
 
 const app = express();
+
+app.use(express.json());
 
 const PORT = 3000;
 
@@ -43,6 +48,46 @@ app.get("/books", async (req, res) => {
   }
 
   res.json(books);
+});
+
+app.post("/books", (req, res) => {
+  const { title, price } = req.body;
+
+  if (!title) {
+    return res.status(400).json({
+      message: "title is required"
+    });
+  }
+
+  const book = addBook({ title, price });
+
+  res.status(201).json(book);
+});
+
+app.patch("/books/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const updated = updateBook(id, req.body);
+
+  if (!updated) {
+    return res.status(404).json({
+      message: "Book not found"
+    });
+  }
+
+  res.json(updated);
+});
+
+app.delete("/books/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const deleted = deleteBook(id);
+
+  if (!deleted) {
+    return res.status(404).json({
+      message: "Book not found"
+    });
+  }
+
+  res.json(deleted);
 });
 
 app.get("/books/:id", (req, res) => {

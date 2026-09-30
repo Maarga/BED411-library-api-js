@@ -111,3 +111,36 @@ export function getBookOrThrow(id) {
 
   return book;
 }
+
+let nextId = 5;
+
+export function addBook(input) {
+  const book = {
+    id: nextId++,
+    isAvailable: true,
+    ...input
+  };
+
+  books.push(book);
+  return book;
+}
+
+export function updateBook(id, changes) {
+  const book = findBookById(id);
+
+  if (!book) return null;
+
+  Object.assign(book, changes);
+
+  return book;
+}
+
+export function deleteBook(id) {
+  const index = books.findIndex(
+    (book) => book.id === id
+  );
+
+  if (index === -1) return null;
+
+  return books.splice(index, 1)[0];
+}
