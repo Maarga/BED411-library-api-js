@@ -25,72 +25,19 @@ export const books = [
   }
 ];
 
-const titles = books.map(
-  (book) => book.title
-);
-
-const labels = books.map(
-  (book) => `${book.title} — ${book.price}`
-);
-
-console.log(titles);
-console.log(labels);
-console.log(books.length);
-
-const cheap = books.filter(
-  (book) => book.price < 50000
-);
-
-const available = books.filter(
-  (book) => book.isAvailable
-);
-
-const book3 = books.find(
-  (book) => book.id === 3
-);
-
-const book99 = books.find(
-  (book) => book.id === 99
-);
-
-console.log(cheap);
-console.log(available);
-console.log(book3);
-console.log(book99 ?? "not found");
-
-function sum(a, b) {
-  return a + b;
-}
-
-function isExpensive(book) {
-  return book.price > 50000;
-}
-
-function getTitles(books) {
-  return books.map((book) => book.title);
-}
+let nextId = 5;
 
 export function countAvailable() {
-  return books.filter(
-    (book) => book.isAvailable
-  ).length;
-}
-
-function formatPrice(price) {
-  return `${price}₮`;
+  return books.filter((book) => book.isAvailable).length;
 }
 
 export function findBookById(id) {
-  return books.find(
-    (book) => book.id === id
-  );
+  return books.find((book) => book.id === id);
 }
 
 export function searchByTitle(keyword) {
   return books.filter((book) =>
-    book.title
-      .toLowerCase()
-      .includes(keyword.toLowerCase())
+    book.title.toLowerCase().includes(keyword.toLowerCase())
   );
 }
 
@@ -111,8 +58,6 @@ export function getBookOrThrow(id) {
 
   return book;
 }
-
-let nextId = 5;
 
 export function addBook(input) {
   const book = {
@@ -137,9 +82,7 @@ export function updateBook(id, changes) {
 }
 
 export function removeBook(id) {
-  const index = books.findIndex(
-    (book) => book.id === id
-  );
+  const index = books.findIndex((book) => book.id === id);
 
   if (index === -1) return false;
 

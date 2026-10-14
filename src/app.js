@@ -9,11 +9,15 @@ import {
   addBook,
   updateBook,
   removeBook
-} from "./books.js";
+} from "./data/books.js";
+
+import { logger } from "./middlewares/logger.js";
+import { notFound, errorHandler } from "./middlewares/error.js";
 
 const app = express();
 
 app.use(express.json());
+app.use(logger);
 
 const PORT = 3000;
 
@@ -141,6 +145,10 @@ app.get("/courses", (req, res) => {
   ]);
 });
 
-app.listen(PORT, () => {
+app.use(notFound);
+app.use(errorHandler);
+
+app.listen(PORT, (error) => {
+  if (error) throw error;
   console.log(`http://localhost:${PORT}`);
 });
