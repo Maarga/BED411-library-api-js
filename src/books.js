@@ -130,7 +130,8 @@ export function updateBook(id, changes) {
 
   if (!book) return null;
 
-  Object.assign(book, changes);
+  const { id: _ignored, ...safeChanges } = changes;
+  Object.assign(book, safeChanges);
 
   return book;
 }
