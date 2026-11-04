@@ -17,6 +17,21 @@ export async function list(req, res) {
   });
 }
 
+export function search(req, res) {
+  const q = req.query.q;
+
+  if (!q) {
+    return res.status(400).json({ message: "q is required" });
+  }
+
+  const data = searchByTitle(q);
+
+  res.json({
+    count: data.length,
+    data
+  });
+}
+
 export function getOne(req, res) {
   const id = Number(req.params.id);
   const book = findBookById(id);

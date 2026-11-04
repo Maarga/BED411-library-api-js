@@ -4,7 +4,8 @@ import * as c from "../controllers/books.controller.js";
 const router = Router();
 
 router.get("/", c.list);
-router.get("/:id", c.getOne);
+router.get("/search", c.search);   
+router.get("/:id", c.getOne);     
 router.post("/", c.create);
 router.patch("/:id", c.update);
 router.delete("/:id", c.remove);

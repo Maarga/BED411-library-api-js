@@ -3,7 +3,7 @@ export function logger(req, res, next) {
 
   res.on("finish", () => {
     const ms = Date.now() - start;
-    console.log(`${req.method} ${req.url} ${res.statusCode} ${ms}ms`);
+    console.log(`${req.method} ${req.originalUrl} ${res.statusCode} ${ms}ms`);
   });
 
   next();
