@@ -1,40 +1,45 @@
-import {
-  findBookById,
-  searchByTitle,
-  getBooksFromDb,
-  addBook,
-  updateBook,
-  removeBook
-} from "../data/books.js";
+import { prisma } from "../db.js";
 
-export async function list(req, res) {
-  const q = req.query.q;
-  const data = q ? searchByTitle(q) : await getBooksFromDb();
+function parseId(req) {
+  const id = Number(req.params.id);
+  return Number.isInteger(id) ? id : null;
+}
 
-  res.json({
-    count: data.length,
-    data
+function searchBooks(q) {
+  return prisma.book.findMany({
+    where: { title: { contains: q, mode: "insensitive" } },
+    orderBy: { id: "asc" }
   });
 }
 
-export function search(req, res) {
+export async function list(req, res) {
+  const q = req.query.q;
+  const books = q
+    ? await searchBooks(q)
+    : await prisma.book.findMany({ orderBy: { id: "asc" } });
+
+  res.json({ count: books.length, data: books });
+}
+
+export async function search(req, res) {
   const q = req.query.q;
 
   if (!q) {
     return res.status(400).json({ message: "q is required" });
   }
 
-  const data = searchByTitle(q);
-
-  res.json({
-    count: data.length,
-    data
-  });
+  const books = await searchBooks(q);
+  res.json({ count: books.length, data: books });
 }
 
-export function getOne(req, res) {
-  const id = Number(req.params.id);
-  const book = findBookById(id);
+export async function getOne(req, res) {
+  const id = parseId(req);
+
+  if (id === null) {
+    return res.status(400).json({ message: "Invalid id" });
+  }
+
+  const book = await prisma.book.findUnique({ where: { id } });
 
   if (!book) {
     return res.status(404).json({ message: "Book not found" });
@@ -43,35 +48,58 @@ export function getOne(req, res) {
   res.json(book);
 }
 
-export function create(req, res) {
+export async function create(req, res) {
   const { title, price } = req.body;
 
-  if (!title) {
-    return res.status(400).json({ message: "title is required" });
+  if (!title || typeof price !== "number") {
+    return res.status(400).json({ message: "title and price are required" });
   }
 
-  const book = addBook({ title, price });
+  const book = await prisma.book.create({
+    data: { title, price }
+  });
+
   res.status(201).json(book);
 }
 
-export function update(req, res) {
-  const id = Number(req.params.id);
-  const updated = updateBook(id, req.body);
+export async function update(req, res) {
+  const id = parseId(req);
 
-  if (!updated) {
-    return res.status(404).json({ message: "Book not found" });
+  if (id === null) {
+    return res.status(400).json({ message: "Invalid id" });
   }
 
-  res.json(updated);
+  const { id: _id, createdAt: _createdAt, ...changes } = req.body;
+
+  try {
+    const book = await prisma.book.update({
+      where: { id },
+      data: changes
+    });
+
+    res.json(book);
+  } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ message: "Book not found" });
+    }
+    throw error;
+  }
 }
 
-export function remove(req, res) {
-  const id = Number(req.params.id);
-  const ok = removeBook(id);
+export async function remove(req, res) {
+  const id = parseId(req);
 
-  if (!ok) {
-    return res.status(404).json({ message: "Book not found" });
+  if (id === null) {
+    return res.status(400).json({ message: "Invalid id" });
   }
 
-  res.status(204).send();
+  try {
+    await prisma.book.delete({ where: { id } });
+    res.status(204).end();
+  } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ message: "Book not found" });
+    }
+    throw error;
+  }
 }
