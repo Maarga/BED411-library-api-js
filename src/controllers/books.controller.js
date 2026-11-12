@@ -8,6 +8,7 @@ function parseId(req) {
 function searchBooks(q) {
   return prisma.book.findMany({
     where: { title: { contains: q, mode: "insensitive" } },
+    include: { author: true },
     orderBy: { id: "asc" }
   });
 }
@@ -16,7 +17,10 @@ export async function list(req, res) {
   const q = req.query.q;
   const books = q
     ? await searchBooks(q)
-    : await prisma.book.findMany({ orderBy: { id: "asc" } });
+    : await prisma.book.findMany({
+        include: { author: true }, // NEW
+        orderBy: { id: "asc" }
+      });
 
   res.json({ count: books.length, data: books });
 }
@@ -39,7 +43,10 @@ export async function getOne(req, res) {
     return res.status(400).json({ message: "Invalid id" });
   }
 
-  const book = await prisma.book.findUnique({ where: { id } });
+  const book = await prisma.book.findUnique({
+    where: { id },
+    include: { author: true } // NEW
+  });
 
   if (!book) {
     return res.status(404).json({ message: "Book not found" });
@@ -49,17 +56,29 @@ export async function getOne(req, res) {
 }
 
 export async function create(req, res) {
-  const { title, price } = req.body;
+  const { title, price, authorId } = req.body; // NEW: authorId
 
-  if (!title || typeof price !== "number") {
-    return res.status(400).json({ message: "title and price are required" });
+  // NEW: authorId must be a number
+  if (!title || typeof price !== "number" || typeof authorId !== "number") {
+    return res
+      .status(400)
+      .json({ message: "title, price and authorId are required" });
   }
 
-  const book = await prisma.book.create({
-    data: { title, price }
-  });
+  // NEW: try/catch for P2003 (that author doesn't exist)
+  try {
+    const book = await prisma.book.create({
+      data: { title, price, authorId },
+      include: { author: true }
+    });
 
-  res.status(201).json(book);
+    res.status(201).json(book);
+  } catch (error) {
+    if (error.code === "P2003") {
+      return res.status(400).json({ message: "Зохиолч олдсонгүй" });
+    }
+    throw error;
+  }
 }
 
 export async function update(req, res) {
@@ -81,6 +100,10 @@ export async function update(req, res) {
   } catch (error) {
     if (error.code === "P2025") {
       return res.status(404).json({ message: "Book not found" });
+    }
+    // NEW: PATCH with an authorId that doesn't exist
+    if (error.code === "P2003") {
+      return res.status(400).json({ message: "Зохиолч олдсонгүй" });
     }
     throw error;
   }

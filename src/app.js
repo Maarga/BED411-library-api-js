@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import booksRouter from "./routes/books.router.js";
+import authorsRouter from "./routes/authors.router.js";
 import { logger } from "./middlewares/logger.js";
 import { notFound, errorHandler } from "./middlewares/error.js";
 
@@ -11,6 +12,7 @@ const PORT = process.env.PORT ?? 3000;
 app.use(express.json());
 app.use(logger);
 
+
 app.get("/", (req, res) => {
   res.json({ message: "Library API", version: "1.0.0" });
 });
@@ -20,6 +22,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/books", booksRouter);
+app.use("/authors", authorsRouter);
 
 app.use(notFound);
 app.use(errorHandler);
